@@ -14,10 +14,11 @@ def welcome_message(DEBUG):
 	return language, word
 
 
-def request(language_1, word):
+def request(language, word):
 
-	language_2 = ("en", "fr")[language_1 != "en"]
-	url = f"https://context.reverso.net/translation/{language_1}-english/{word}"
+	languages = ("english-french", "french-english")[language == "en"]
+
+	url = f"https://context.reverso.net/translation/{languages}/{word}"
 	headers = {'User-Agent': 'Mozilla/5.0'}
 
 	r = requests.get(url, headers=headers)
@@ -25,16 +26,21 @@ def request(language_1, word):
 	if r:
 		print("200 OK", "Translations", sep="\n")
 		soup = BeautifulSoup(r.content, 'html.parser')
-		result = soup.find_all("a", {"class":"translation ltr dict n"})
-		print(result, url)
+
+		translations = soup.find_all("span", {"class":"display-term"})
+		print([el.text.strip() for el in translations])
+
+		examples = soup.find("section", {"id":"examples-content"}).find_all("span", {"class":"text"})
+		print([el.text.strip() for el in examples])
+
 	else:
-		pass
+		print("Poor connection")
 
 
 if __name__ == "__main__":
 	import requests
 	from bs4 import BeautifulSoup
 
-	DEBUG = True
+	DEBUG = False
 
 	request(*welcome_message(DEBUG))
