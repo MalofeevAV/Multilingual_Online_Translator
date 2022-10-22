@@ -3,10 +3,10 @@ def welcome_message(DEBUG):
 		language = "french"
 		word = "hello"
 	else:
-		message_1 = "Type \"en\" if you want to translate from French into English, or \"fr\" if you want to translate from English into French:"
+		message_1 = "Type \"en\" if you want to translate from French into English, or \"fr\" if you want to translate from English into French:\n"
 		language = input(message_1)
 
-		message_2 = "Type the word you want to translate:"
+		message_2 = "Type the word you want to translate:\n"
 		word = input(message_2)
 
 	print(f"You chose \"{language}\" as the language to translate \"{word}\" to.")
@@ -15,8 +15,8 @@ def welcome_message(DEBUG):
 
 
 def request(language, word):
-
 	languages = ("english-french", "french-english")[language == "en"]
+	lang = languages.split("-")[1]
 
 	url = f"https://context.reverso.net/translation/{languages}/{word}"
 	headers = {'User-Agent': 'Mozilla/5.0'}
@@ -24,14 +24,17 @@ def request(language, word):
 	r = requests.get(url, headers=headers)
 
 	if r:
-		print("200 OK", "Translations", sep="\n")
+		print(f"200 OK\n")
 		soup = BeautifulSoup(r.content, 'html.parser')
 
 		translations = soup.find_all("span", {"class":"display-term"})
-		print([el.text.strip() for el in translations])
+		print(f"{lang.capitalize()} Translations:")
+		[print(el.text.strip()) for el in translations[:5]]
+		print()
 
 		examples = soup.find("section", {"id":"examples-content"}).find_all("span", {"class":"text"})
-		print([el.text.strip() for el in examples])
+		print(f"{lang.capitalize()} Examples:")
+		[print(el.text.strip(), end="\n\n") if count%2 == 0 else print(el.text.strip()) for count, el in enumerate(examples[:10], 1)]
 
 	else:
 		print("Poor connection")
